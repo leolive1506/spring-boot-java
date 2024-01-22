@@ -1,3 +1,21 @@
+# Paginação
+```java
+    //    {{ _.baseURL }}/medicos?size=1&page=0
+    //    {{ _.baseURL }}/medicos?sort=id,desc
+    //    public ResponseEntity<Page<DadosListagemMedico>> listar(Pageable paginacao) {
+    @GetMapping
+    public ResponseEntity<Page<DadosListagemMedico>> listar(@PageableDefault(size = 10, sort = "nome") Pageable paginacao) {
+        Page<Medico> medicos = repository.findAll(paginacao);
+        return ResponseEntity.ok().body(medicos.map(DadosListagemMedico::new));
+    }
+```
+- por padrão, os parâmetros utilizados para realizar a paginação e a ordenação são **page, size e sort**
+  - modificar o nome padrão
+```properties
+spring.data.web.pageable.page-parameter=pagina
+spring.data.web.pageable.size-parameter=tamanho
+spring.data.web.sort.sort-parameter=ordem
+```
 # Validações (starter validation)
 Modulo que integra com especificação java BeanValidation
 - [Lista de anotations](https://jakarta.ee/specifications/bean-validation/3.0/jakarta-bean-validation-spec-3.0.html#builtinconstraints)
@@ -25,6 +43,10 @@ spring.datasource.url=jdbc:mysql://localhost/vollmed_api
 spring.datasource.username=root
 spring.datasource.root=root
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+```
+- habilitar log das queries
+```properties
+spring.jpa.show-sql=true
 ```
 ## Flyway
 Adiciona migrations ao projeto
