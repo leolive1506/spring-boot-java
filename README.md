@@ -1,6 +1,23 @@
 # Validações (starter validation)
 Modulo que integra com especificação java BeanValidation
-
+- [Lista de anotations](https://jakarta.ee/specifications/bean-validation/3.0/jakarta-bean-validation-spec-3.0.html#builtinconstraints)
+```java
+public record DadosCadastroMedico(
+    @NotBlank // não nulo e nem vazio
+    String nome,
+    @NotBlank
+    @Email
+    String email,
+    @NotBlank
+    @Pattern(regexp = "\\d{4,6}")
+    String crm,
+    @NotNull // não é not blank, pois not blank é so pra string
+    Especialidade especialidade,
+    @NotNull
+    @Valid  DadosEndereco endereco //  valid diz que endereco tem validcoes e pra validar
+) {
+}
+```
 # Banco mysql
 Configurações
 ```shell
