@@ -1,11 +1,18 @@
 # Banco mysql
-- adicionar migrations
-- configurações
+Configurações
 ```shell
 spring.datasource.url=jdbc:mysql://localhost/vollmed_api
 spring.datasource.username=root
 spring.datasource.root=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 ```
+## Flyway
+Adiciona migrations ao projeto
+- cadança executada será criado arquivo .sql e lá escrever bloco de comando que será executado
+- salvar em main/resources/db/migration
+- para projeto durante a criação do arquivo
+- segue um padrão de nomenclatura dos arquivos
+  - V1__descricao.sql 
 # CORS (Cross-Origin Resource Sharing - "compartilhamento de recursos com origens diferentes")
 - informam aos navegadores para permitir que uma aplicação Web seja executada em uma origem e acesse recursos de outra origem diferente.
   - chamada de requisição cross-origin HTTP
