@@ -32,3 +32,4 @@ public class CorsConfiguration implements WebMvcConfigurer {
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)
 - [explicação CORS](https://cursos.alura.com.br/course/spring-boot-3-desenvolva-api-rest-java/task/116048)
+- [Explicação classes recodd](https://cursos.alura.com.br/course/spring-boot-3-desenvolva-api-rest-java/task/116049)
