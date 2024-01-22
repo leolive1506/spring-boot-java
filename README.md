@@ -32,7 +32,22 @@ Adiciona migrations ao projeto
 - salvar em main/resources/db/migration
 - para projeto durante a criação do arquivo
 - segue um padrão de nomenclatura dos arquivos
-  - V1__descricao.sql 
+  - V1__descricao.sql
+### Erro por ter executado migration antecipadamente ao salvar arquivo
+É importante parar o projeto ao criar os arquivos de migrations, para evitar que o Flyway os execute antes da hora, com o código ainda incompleto
+- Esse erro também pode acontecer se o código da migration estiver inválido, contendo algum trecho de SQL digitado de maneira incorreta.
+- Para resolver esse problema será necessário acessar o banco de dados da aplicação e executar o seguinte comando sql:
+  - apagar na tabela do Flyway todas as migrations cuja execução falhou. Após isso, basta corrigir o código da migration e executar novamente o projeto.
+```sql
+delete from flyway_schema_history where success = 0;
+```
+- **Obs:** Pode acontecer de alguma migration ter criado uma tabela e/ou colunas e com isso o problema vai persistir, pois o flyway não vai apagar as tabelas/colunas criadas em migrations que falharam
+  - Nesse caso você pode apagar o banco de dados e criá-lo novamente:
+```sql
+drop database vollmed_api;
+create database vollmed_api; 
+```
+
 # CORS (Cross-Origin Resource Sharing - "compartilhamento de recursos com origens diferentes")
 - informam aos navegadores para permitir que uma aplicação Web seja executada em uma origem e acesse recursos de outra origem diferente.
   - chamada de requisição cross-****origin HTTP
