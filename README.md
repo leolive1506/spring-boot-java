@@ -1,3 +1,6 @@
+# Validações (starter validation)
+Modulo que integra com especificação java BeanValidation
+
 # Banco mysql
 Configurações
 ```shell
@@ -15,7 +18,7 @@ Adiciona migrations ao projeto
   - V1__descricao.sql 
 # CORS (Cross-Origin Resource Sharing - "compartilhamento de recursos com origens diferentes")
 - informam aos navegadores para permitir que uma aplicação Web seja executada em uma origem e acesse recursos de outra origem diferente.
-  - chamada de requisição cross-origin HTTP
+  - chamada de requisição cross-****origin HTTP
 - informa aos navegadores se um determinado recurso pode ou não ser acessado.
 
 ## Same-origin policy
