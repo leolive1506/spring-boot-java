@@ -1,3 +1,11 @@
+# Banco mysql
+- adicionar migrations
+- configurações
+```shell
+spring.datasource.url=jdbc:mysql://localhost/vollmed_api
+spring.datasource.username=root
+spring.datasource.root=root
+```
 # CORS (Cross-Origin Resource Sharing - "compartilhamento de recursos com origens diferentes")
 - informam aos navegadores para permitir que uma aplicação Web seja executada em uma origem e acesse recursos de outra origem diferente.
   - chamada de requisição cross-origin HTTP
