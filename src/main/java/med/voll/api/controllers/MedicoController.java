@@ -28,7 +28,7 @@ public class MedicoController {
     //    {{ _.baseURL }}/medicos?size=1&page=0&sort=id,desc
     @GetMapping
     public ResponseEntity<Page<DadosListagemMedico>> listar(@PageableDefault(size = 10, sort = "nome") Pageable paginacao) {
-        Page<Medico> medicos = repository.findAll(paginacao);
+        Page<Medico> medicos = repository.findAllByAtivoTrue(paginacao);
         return ResponseEntity.ok().body(medicos.map(DadosListagemMedico::new));
     }
 
@@ -43,7 +43,8 @@ public class MedicoController {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        repository.deleteById(id);
+        Medico medico = repository.getReferenceById(id);
+        medico.excluir();
         return ResponseEntity.noContent().build();
     }
 }
