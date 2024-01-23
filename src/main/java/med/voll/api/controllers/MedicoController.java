@@ -1,10 +1,7 @@
 package med.voll.api.controllers;
 
 import jakarta.validation.Valid;
-import med.voll.api.medicos.DadosCadastroMedico;
-import med.voll.api.medicos.DadosListagemMedico;
-import med.voll.api.medicos.Medico;
-import med.voll.api.medicos.MedicoRepository;
+import med.voll.api.medicos.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,11 +25,25 @@ public class MedicoController {
         return ResponseEntity.ok().body(medico);
     }
 
-    //    {{ _.baseURL }}/medicos?size=1&page=0
-    //    {{ _.baseURL }}/medicos?sort=id,desc
+    //    {{ _.baseURL }}/medicos?size=1&page=0&sort=id,desc
     @GetMapping
     public ResponseEntity<Page<DadosListagemMedico>> listar(@PageableDefault(size = 10, sort = "nome") Pageable paginacao) {
         Page<Medico> medicos = repository.findAll(paginacao);
         return ResponseEntity.ok().body(medicos.map(DadosListagemMedico::new));
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> atualizar(@PathVariable Long id, @RequestBody @Valid DadosAtualizacaoMedico dados) {
+        Medico medico = repository.getReferenceById(id);
+        medico.atualizarInformacoes(dados);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
