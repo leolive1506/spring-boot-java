@@ -47,6 +47,6 @@ public class PacienteController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         Paciente paciente = repository.getReferenceById(id);
         paciente.excluir();
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
