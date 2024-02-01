@@ -104,6 +104,54 @@ public class CorsConfiguration implements WebMvcConfigurer {
 ```properties
 server.error.include-stacktrace=never
 ```
+- Personalizar retorno exception
+```java
+@RestControllerAdvice
+public class TratadorErros {
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Void> tratarErro404() {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<List<DadosErroValidacao>> tratarErroValidacao(MethodArgumentNotValidException exception) {
+        var errors = exception.getFieldErrors();
+        return ResponseEntity.badRequest().body(errors.stream().map(DadosErroValidacao::new).toList());
+    }
+
+    public record DadosErroValidacao(
+            String campo,
+            String mensagem
+    ) {
+        public DadosErroValidacao(FieldError error) {
+            this(error.getField(), error.getDefaultMessage());
+        }
+    }
+}
+```
+- Bean validation consegue traduzir as mensagem automaticamente passando parametro no header Accept-Language
+![img.png](img.png)
+## Personalizando mensagens de erro
+- adicionando o atributo message nas próprias anotações de validação:
+
+```java
+public record DadosCadastroMedico(
+        @NotBlank(message = "Nome é obrigatório")
+        String nome
+) {}
+```
+- isolando as mensagens em um arquivo de propriedades
+  - que deve possuir o nome ValidationMessages.properties e ser criado no diretório src/main/resources:
+```properties
+nome.obrigatorio=Nome é obrigatório
+```
+```java
+public record DadosCadastroMedico(
+    @NotBlank(message = "{nome.obrigatorio}")
+    String nome
+) {}
+```
+
 
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)
