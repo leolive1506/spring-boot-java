@@ -99,7 +99,11 @@ public class CorsConfiguration implements WebMvcConfigurer {
 }
 ```
 
-
+# Error
+- não incluir stacktrace
+```properties
+server.error.include-stacktrace=never
+```
 
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)

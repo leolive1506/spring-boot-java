@@ -1,4 +1,4 @@
-package med.voll.api.medicos;
+package med.voll.api.domain.medicos;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
