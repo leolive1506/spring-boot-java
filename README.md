@@ -69,7 +69,7 @@ delete from flyway_schema_history where success = 0;
 drop database vollmed_api;
 create database vollmed_api; 
 ```
-
+## [JPA Query Methods](https://docs.spring.io/spring-data/jpa/reference/jpa/query-methods.html)
 # CORS (Cross-Origin Resource Sharing - "compartilhamento de recursos com origens diferentes")
 - informam aos navegadores para permitir que uma aplicação Web seja executada em uma origem e acesse recursos de outra origem diferente.
   - chamada de requisição cross-****origin HTTP
@@ -152,6 +152,85 @@ public record DadosCadastroMedico(
 ) {}
 ```
 
+# Spring security
+1. autenticação
+1. autorização (controle de acesso)
+3. Proteção contra ataques (CSRF, clickjacking, etc)
+
+## Diferneça statefull x stateless
+1. Statefull (Autenticação em aplicações web)
+- Session guardando estado do usuário
+2. Stateless (Autenticação em API Rest)
+- API Rest não deve guardar estados
+  - servidor processa, devolve resposta e na próxima requisição não tem sessão
+  - JWT (JSON web tokens)
+
+## Autenticação
+1. requisição com dados de login
+2. API verifica se dados são validos (verifica database)
+3. Gera JWT
+4. Devolve JWT
+
+## Validação token
+1. Request enviando JWT
+2. Valição JWT
+3. Token válido? (se não bloqueia requisição)
+
+## Funcionamento
+So de adicionar depencia, ao iniciar projeto
+  - cria uma senha pra ambiente de desenvolvimento ao iniciar projeto 
+  - bloqueia todas requisições por padrão e redireciona para uma tela de login
+    - Cria um usuário default com nome 'user' e password no log do console (ideal para aplicações statefull)
+    - Spring security permite personalizar isso
+```xml
+<dependencies>
+  <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+  </dependency>
+  <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+## Implementação em API Rest
+- Ao implementar não tem comportamento padrão e fornecer tela de login e bloquear todas requisições 
+```java
+@Service
+public class AutenticacaoService implements UserDetailsService {
+    @Autowired
+    private UsuarioRepository repository;
+
+    // loadUserByUsername - metodo que spring chama automaticamente ao fazer login
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return repository.findByLogin(username);
+    }
+}
+```
+```java
+@Configuration
+@EnableWebSecurity // indicar que irá personalizar configurações de segurança
+public class SecurityConfigurations {
+
+    // devolve o retorno do metodo
+    @Bean 
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
+    }
+
+}
+```
+
+# Dicas spring
+## @Bean
+Exportar uma classe para o spring, fazendo com que ele consiga carregá-la e realize a sua injeção em outras classes
 
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)
