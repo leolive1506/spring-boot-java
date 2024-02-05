@@ -215,23 +215,76 @@ public class AutenticacaoService implements UserDetailsService {
 @Configuration
 @EnableWebSecurity // indicar que irá personalizar configurações de segurança
 public class SecurityConfigurations {
+  // devolve o retorno do metodo
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .build();
+  }
 
-    // devolve o retorno do metodo
-    @Bean 
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .build();
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    return configuration.getAuthenticationManager();
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+}
+```
+```java
+public class AutenticacaoController {
+    // classe do proprio spring que dispara o processo de autenticação, chamando o nosso serviço AutenticacaoService
+    @Autowired
+    private AuthenticationManager manager;
+
+    @PostMapping("/login")
+    public ResponseEntity<Void> login(@RequestBody @Valid DadosAutenticacao dados) {
+        var token = new UsernamePasswordAuthenticationToken(dados.login(), dados.senha());
+        var authentication = manager.authenticate(token);
+
+        return ResponseEntity.ok().build();
     }
-
 }
 ```
 
+# [JWT](https://jwt.io/libraries?language=Java)
+- [Usado auth0](https://github.com/auth0/java-jwt)
+```java
+@Service
+public class TokenService {
+    public String gerarToken(Usuario usuario) {
+        try {
+            // HMAC256(senha secreta)
+            Algorithm algorithm = Algorithm.HMAC256("12345678");
+            return JWT.create()
+                    .withIssuer("API Voll.med")
+                    .withSubject(usuario.getLogin())
+                    // .withClaim("id", usuario.getId())
+                    .withExpiresAt(LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00")))
+                    .sign(algorithm);
+        } catch (JWTCreationException exception){
+            throw new RuntimeException("Erro ao gerar token jwt", exception);
+        }
+    }
+}
+```
 # Dicas spring
 ## @Bean
 Exportar uma classe para o spring, fazendo com que ele consiga carregá-la e realize a sua injeção em outras classes
 
+## Variaveis ambiente
+- :valor_default
+```properties
+api.security.token.secret=${JWT_SECRET:12345678}
+```
+```java
+@Value("${api.security.token.secret}")
+private String secret;
+```
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)
 - [explicação CORS](https://cursos.alura.com.br/course/spring-boot-3-desenvolva-api-rest-java/task/116048)
