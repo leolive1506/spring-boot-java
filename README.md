@@ -255,6 +255,37 @@ public class AutenticacaoController {
 }
 ```
 
+## Controlando autorização
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  return http.csrf().disable()
+          .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+          .and().authorizeHttpRequests()
+          .requestMatchers(HttpMethod.POST, "/login").permitAll()
+          .requestMatchers(HttpMethod.DELETE, "/medicos").hasRole("ADMIN")
+          .requestMatchers(HttpMethod.DELETE, "/pacientes").hasRole("ADMIN")
+          .anyRequest().authenticated()
+          .and().addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+          .build();
+}
+```
+- com [Method Security](https://docs.spring.io/spring-security/reference/servlet/authorization/method-security.html)
+```java
+@GetMapping("/{id}")
+@Secured("ROLE_ADMIN")
+public ResponseEntity detalhar(@PathVariable Long id) {
+  var medico = repository.getReferenceById(id);
+  return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
+} 
+```
+- **Atenção!**
+  - Por padrão esse recurso vem desabilitado no spring Security, sendo que para o utilizar devemos adicionar a seguinte anotação na classe Securityconfigurations do projeto:
+```java
+@EnableMethodSecurity(securedEnabled = true)
+```
+
+
 # [JWT](https://jwt.io/libraries?language=Java)
 - [Usado auth0](https://github.com/auth0/java-jwt)
 ```java
