@@ -221,6 +221,10 @@ public class SecurityConfigurations {
     return http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            //.authorizeHttpRequests(req -> {
+              // req.requestMatchers("/login").permitAll();
+              // req.anyRequest().authenticated();
+            // })
             .build();
   }
 
@@ -272,6 +276,94 @@ public class TokenService {
     }
 }
 ```
+
+# Filter x Interceptors 
+- Toda requisição passa pelo filter
+  - acabou chama servlet ou controller 
+- DispatcherServlet
+  - Classe servlet que recebe todas requisições e ele descobre qual controller vai chamar
+    - entre servlet e controller, existe um filtro do spring chamando **Handler Interceptor**
+      - que tem a mesma ideia de um filter (interceptar requisição antes de chamar contorller)
+- Difernete entre os dois é
+  - Interceptor é do spring
+    - executado após requisição passar pelo DispatcherServlet
+    - Consigo recuperar coisas do spring
+    - Consegue saber qual controller vai ser chamado
+    - Consegue usar injeção de dependencia
+  - Filter não haver com spring
+    - Executado antes do DispatcherServlet
+    - Spring nem começa ser executado
+
+## Criando middlewares
+- filterChain.doFilter indica que os próximos filters, caso existam outros, podem ser executados
+```java
+// Filter (pacote jakarta.servlet)
+@WebFilter(urlPatterns = "/api/**")
+public class LogFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        System.out.println("Requisição recebida em: " + LocalDateTime.now());
+        filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+}
+```
+- OncePerRequestFilter
+  - essa classe do spring implementa Filter de servlet
+  - classe do spring que garante que vai ser executada apenas uma unica vez pra cada requisição
+```java
+
+@Component
+public class SecurityFilter extends OncePerRequestFilter {
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private UsuarioRepository repository;
+
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        var tokenJWT = recuperarToken(request);
+        if (tokenJWT != null) {
+            var subject = tokenService.getSubject(tokenJWT);
+            // falar ao spring que está logado
+            var usuario = repository.findByLogin(subject);
+            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String recuperarToken(HttpServletRequest request) {
+        var authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null) {
+            return authorizationHeader.replace("Bearer ", "");
+        }
+
+        return null;
+    }
+}
+```
+- No filter chain spring boot
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    // configurar autorização, tem que estar logado pra fazer tudo, exceto login
+    return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(req -> {
+                req.requestMatchers("/auth/login").permitAll();
+                req.anyRequest().authenticated();
+            })
+            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+}
+```
 # Dicas spring
 ## @Bean
 Exportar uma classe para o spring, fazendo com que ele consiga carregá-la e realize a sua injeção em outras classes
@@ -285,6 +377,9 @@ api.security.token.secret=${JWT_SECRET:12345678}
 @Value("${api.security.token.secret}")
 private String secret;
 ```
+
+## @Component
+- Spring carregar uma classe generica (não é serviço, interface, repository, config)
 # Links
 - [Trello com as funcionalidades](https://trello.com/b/O0lGCsKb/api-voll-med)
 - [explicação CORS](https://cursos.alura.com.br/course/spring-boot-3-desenvolva-api-rest-java/task/116048)
